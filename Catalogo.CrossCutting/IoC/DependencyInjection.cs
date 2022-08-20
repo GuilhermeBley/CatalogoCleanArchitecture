@@ -16,18 +16,13 @@ namespace Catalogo.CrossCutting.IoC
         public static IServiceCollection AddInfrastructure(this IServiceCollection services,
             IConfiguration configuration)
         {
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            // options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"
-            //), b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-               options.UseMySql(configuration.GetConnectionString("DefaultConnection"),
-                     new MySqlServerVersion(new Version(8, 0, 11))));
-
-            services.AddScoped<ICategoriaRepository, CategoriaRepository>();
-            services.AddScoped<IProdutoRepository, ProdutoRepository>();
-            services.AddScoped<IProdutoService, ProdutoService>();
-            services.AddScoped<ICategoriaService, CategoriaService>();
+            services
+                .AddSingleton<IConfiguration>(configuration)
+                .AddScoped<ICategoriaRepository, CategoriaRepository>()
+                .AddScoped<IProdutoRepository, ProdutoRepository>()
+                .AddScoped<IProdutoService, ProdutoService>()
+                .AddScoped<ICategoriaService, CategoriaService>()
+                .AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 
