@@ -2,47 +2,57 @@ using System.Data;
 using System;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Catalogo.Infrastructure.Connection;
 
 namespace Catalogo.Infrastructure.Context
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private bool IsOpen { get; set; } = false;
-        private bool IsDisposed { get; set; } = false;
-        private readonly DbConnection _connection;
-        private DbTransaction Transaction;
+        private bool hasConnection = false;
+        public bool HasConnection => hasConnection;
 
-        public UnitOfWork(DbConnection connection)
+        private DbConnection _connection;
+        private DbTransaction _transaction;
+        private readonly IConnectionFactory _connectionFactory;
+
+        public UnitOfWork(IConnectionFactory connectionFactory)
         {
-            _connection = connection;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task CommitAsync()
         {
-            ThrowIfDisposed();
+            ThrowWhenNotCreatedConnection();
 
-            await Transaction.CommitAsync();
+            await _transaction.CommitAsync();
         }
 
         public void Dispose()
         {
-            ThrowIfDisposed();
+            ThrowWhenNotCreatedConnection();
 
-            Transaction?.Dispose();
-            _connection?.Dispose();
+            try{
+                _transaction?.Dispose();
+            }catch{}
+            
+            try{
+                _connection?.Dispose();
+            }catch{}
+            
+            _transaction = null;
+            _connection = null;
 
-            IsDisposed = true;
+            hasConnection = false;
         }
 
-        public async Task<IDbConnection> GetConn()
+        public async Task<IDbConnection> CreateConnectionAsync()
         {
-            ThrowIfDisposed();
-
-            if (!IsOpen)
+            if (!hasConnection)
             {
+                _connection = _connectionFactory.CreateConn();
                 await _connection.OpenAsync();
-                Transaction = await _connection.BeginTransactionAsync();
-                IsOpen = true;
+                _transaction = await _connection.BeginTransactionAsync();
+                hasConnection = true;
             }
 
             return _connection;
@@ -50,15 +60,17 @@ namespace Catalogo.Infrastructure.Context
 
         public async Task RollBackAsync()
         {
-            ThrowIfDisposed();
+            ThrowWhenNotCreatedConnection();
 
-            await Transaction.RollbackAsync();
+            await _transaction.RollbackAsync();
         }
 
-        private void ThrowIfDisposed()
+        private void ThrowWhenNotCreatedConnection()
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(UnitOfWork));
+            if (_connection is null)
+            {
+                throw new DataException("No has there Connection to execute method.");
+            }
         }
     }
 }
