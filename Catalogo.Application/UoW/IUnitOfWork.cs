@@ -9,6 +9,11 @@ namespace Catalogo.Application.UoW
     public interface IUnitOfWork : IDisposable
     {
         /// <summary>
+        /// Identifier of unit
+        /// </summary>
+        Guid Identifier { get; }
+
+        /// <summary>
         /// Necessary to create and open a new connection
         /// </summary>
         /// <returns>async result of <see cref="IUnitOfWork"/> opened</returns>
