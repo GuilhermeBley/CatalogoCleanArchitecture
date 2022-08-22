@@ -1,4 +1,0 @@
-namespace Catalogo.Infrastructure.Connection
-{
-
-}
