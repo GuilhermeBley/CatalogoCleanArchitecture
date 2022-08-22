@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace Catalogo.Infrastructure.Context
 {
-    public class UnitOfWork : IUnitOfWorkRepository
+    /// <summary>
+    /// Manage connections and transactions
+    /// </summary>
+    public class UnitOfWorkRepository : IUnitOfWorkRepository
     {
         private DbConnection _connection { get; set; }
         public DbTransaction _transaction { get; set; }
@@ -20,7 +23,7 @@ namespace Catalogo.Infrastructure.Context
 
         private readonly IConnectionFactory _connectionFactory;
 
-        public UnitOfWork(IConnectionFactory connectionFactory)
+        public UnitOfWorkRepository(IConnectionFactory connectionFactory)
         {
             _connectionFactory = connectionFactory;
         }

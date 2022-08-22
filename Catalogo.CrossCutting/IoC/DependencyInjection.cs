@@ -1,6 +1,7 @@
 ﻿using Catalogo.Application.Interfaces;
 using Catalogo.Application.Mappings;
 using Catalogo.Application.Services;
+using Catalogo.Application.UoW;
 using Catalogo.Domain.Interfaces;
 using Catalogo.Infrastructure.Context;
 using Catalogo.Infrastructure.Repositories;
@@ -22,7 +23,8 @@ namespace Catalogo.CrossCutting.IoC
                 .AddScoped<IProdutoRepository, ProdutoRepository>()
                 .AddScoped<IProdutoService, ProdutoService>()
                 .AddScoped<ICategoriaService, CategoriaService>()
-                .AddScoped<IUnitOfWorkRepository, UnitOfWork>();
+                .AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>()
+                .AddScoped<IUnitOfWork, UnitOfWorkRepository>();
 
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 
