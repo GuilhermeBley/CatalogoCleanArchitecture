@@ -19,7 +19,7 @@ namespace Catalogo.Infrastructure.EntitiesConfiguration
 
 
             builder.HasOne(e => e.Categoria).WithMany(e => e.Produtos)
-                .HasForeignKey(e => e.CategoriaId);
+                .HasForeignKey(e => e.IdCategoria);
         }
     }
 }

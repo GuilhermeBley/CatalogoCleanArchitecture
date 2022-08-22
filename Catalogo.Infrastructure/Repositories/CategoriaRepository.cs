@@ -1,49 +1,62 @@
 ﻿using Catalogo.Domain.Entities;
 using Catalogo.Domain.Interfaces;
 using Catalogo.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Catalogo.Infrastructure.Repositories
 {
-    public class CategoriaRepository : ICategoriaRepository
+    public class CategoriaRepository : RepositoryBase, ICategoriaRepository
     {
-        private ApplicationDbContext _categoryContext;
-        public CategoriaRepository(ApplicationDbContext context)
+        public CategoriaRepository(IUnitOfWorkRepository uoW) : base(uoW)
         {
-            _categoryContext = context;
         }
 
-        public async Task<Categoria> CreateAsync(Categoria category)
+        public async Task<int> CreateAsync(Categoria category)
         {
-            _categoryContext.Add(category);
-            await _categoryContext.SaveChangesAsync();
-            return category;
+            return
+                await _connection.ExecuteAsync("INSERT INTO catalagodapper.categoria (Nome, ImagemUrl) VALUES (@Nome, @ImagemUrl);", 
+                    category,
+                    transaction: _transaction
+                );
         }
 
         public async Task<Categoria> GetByIdAsync(int? id)
         {
-            return await _categoryContext.Categorias.FindAsync(id);
+            return await _connection.QueryFirstOrDefaultAsync<Categoria>(
+                "SELECT Id, Nome, ImagemUrl FROM catalagodapper.categoria WHERE Id=@Id;",
+                new { id },
+                _transaction
+            );
         }
 
         public async Task<IEnumerable<Categoria>> GetCategoriasAsync()
         {
-            return await _categoryContext.Categorias.ToListAsync();
+            return await _connection.QueryAsync<Categoria>(
+                "SELECT Id, Nome, ImagemUrl FROM catalagodapper.categoria;",
+                _transaction
+            );
         }
 
-        public async Task<Categoria> RemoveAsync(Categoria category)
+        public async Task<int> RemoveAsync(Categoria category)
         {
-            _categoryContext.Remove(category);
-            await _categoryContext.SaveChangesAsync();
-            return category;
+            return
+                await _connection.ExecuteAsync(
+                    "DELETE FROM catalagodapper.categoria WHERE Id=@Id;",
+                    new { category.Id },
+                    _transaction
+                );
         }
 
-        public async Task<Categoria> UpdateAsync(Categoria category)
+        public async Task<int> UpdateAsync(Categoria category)
         {
-            _categoryContext.Update(category);
-            await _categoryContext.SaveChangesAsync();
-            return category;
+            return 
+                await _connection.ExecuteAsync(
+                    "UPDATE catalagodapper.categoria SET Nome=@Nome, ImagemUrl=@ImagemUrl;",
+                    category,
+                    _transaction
+                );
         }
     }
 }

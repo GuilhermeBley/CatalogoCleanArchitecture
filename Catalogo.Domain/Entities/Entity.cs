@@ -1,7 +1,11 @@
-﻿namespace Catalogo.Domain.Entities
+﻿using Catalogo.Domain.Validation;
+
+namespace Catalogo.Domain.Entities
 {
-    public abstract class Entity
+    public abstract class Entity : IValidationEntity
     {
-        public int Id { get; protected set; }
+        public int Id { get; set; }
+
+        public abstract void Validate();
     }
 }

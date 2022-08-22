@@ -8,8 +8,8 @@ namespace Catalogo.Domain.Interfaces
     {
         Task<IEnumerable<Produto>> GetProdutosAsync();
         Task<Produto> GetByIdAsync(int? id);
-        Task<Produto> CreateAsync(Produto product);
-        Task<Produto> UpdateAsync(Produto product);
-        Task<Produto> RemoveAsync(Produto product);
+        Task<int> CreateAsync(Produto product);
+        Task<int> UpdateAsync(Produto product);
+        Task<int> RemoveAsync(Produto product);
     }
 }

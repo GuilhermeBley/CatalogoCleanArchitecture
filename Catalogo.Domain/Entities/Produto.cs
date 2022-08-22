@@ -5,57 +5,42 @@ namespace Catalogo.Domain.Entities
 {
     public sealed class Produto : Entity
     {
-        public Produto(string nome, string descricao, decimal preco, string imagemUrl,
-            int estoque, DateTime dataCadastro)
-        {
-            ValidateDomain(nome, descricao, preco, imagemUrl, estoque, dataCadastro);
-        }
+        public string Nome { get; set; }
+        public string Descricao { get; set; }
+        public decimal Preco { get; set; }
+        public string ImagemUrl { get; set; }
+        public int Estoque { get; set; }
+        public DateTime DataCadastro { get; set; }
 
-        public string Nome { get; private set; }
-        public string Descricao { get; private set; }
-        public decimal Preco { get; private set; }
-        public string ImagemUrl { get; private set; }
-        public int Estoque { get; private set; }
-        public DateTime DataCadastro { get; private set; }
-
-        public void Update(string nome, string descricao, decimal preco, string imagemUrl, 
-            int estoque, DateTime dataCadastro, int categoriaId)
+        public int IdCategoria { get; set; }
+        public Categoria Categoria { get; set; }
+        
+        public override void Validate()
         {
-            ValidateDomain(nome, descricao, preco, imagemUrl, estoque, dataCadastro);
-            CategoriaId = categoriaId;
-        }
-
-        private void ValidateDomain(string nome, string descricao, decimal preco, string imagemUrl, 
-            int estoque, DateTime dataCadastro)
-        {
-            DomainExceptionValidation.When(string.IsNullOrEmpty(nome),
+            DomainExceptionValidation.When(string.IsNullOrEmpty(Nome),
                 "Nome inválido. O nome é obrigatório");
 
-            DomainExceptionValidation.When(nome.Length < 3,
+            DomainExceptionValidation.When(Nome.Length < 3,
                 "O nome deve ter no mínimo 3 caracteres");
 
-            DomainExceptionValidation.When(string.IsNullOrEmpty(descricao),
+            DomainExceptionValidation.When(string.IsNullOrEmpty(Descricao),
                 "Descrição inválida. A descrição é obrigatória");
 
-            DomainExceptionValidation.When(descricao.Length < 5,
+            DomainExceptionValidation.When(Descricao.Length < 5,
                 "A descrição deve ter no mínimo 5 caracteres");
 
-            DomainExceptionValidation.When(preco < 0, "Valor do preço inválido");
+            DomainExceptionValidation.When(Preco < 0, "Valor do preço inválido");
 
-            DomainExceptionValidation.When(imagemUrl?.Length > 250,
+            DomainExceptionValidation.When(ImagemUrl is null,
+                "Necessário uma imagem para o produto.");
+            
+            DomainExceptionValidation.When(ImagemUrl?.Length > 250,
                 "O nome da imagem não pode exceder 250 caracteres");
 
-            DomainExceptionValidation.When(estoque < 0, "Estoque inválido");
+            DomainExceptionValidation.When(ImagemUrl?.Length > 250,
+                "O nome da imagem não pode exceder 250 caracteres");
 
-            Nome = nome;
-            Descricao = descricao;
-            Preco = preco;
-            ImagemUrl = imagemUrl;
-            Estoque = estoque;
-            DataCadastro = dataCadastro;
-
+            DomainExceptionValidation.When(Estoque < 0, "Estoque inválido");
         }
-        public int CategoriaId { get; set; }
-        public Categoria Categoria { get; set; }
     }
 }

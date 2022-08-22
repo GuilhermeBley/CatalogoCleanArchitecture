@@ -1,51 +1,63 @@
-﻿using Catalogo.Domain.Entities;
+﻿using Dapper;
+using Catalogo.Domain.Entities;
 using Catalogo.Domain.Interfaces;
 using Catalogo.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Catalogo.Infrastructure.Repositories
 {
-    public class ProdutoRepository : IProdutoRepository
+    public class ProdutoRepository : RepositoryBase, IProdutoRepository
     {
-        private ApplicationDbContext _productContext;
-        public ProdutoRepository(ApplicationDbContext context)
+        public ProdutoRepository(IUnitOfWorkRepository uoW) : base(uoW)
         {
-            _productContext = context;
         }
 
-        public async Task<Produto> CreateAsync(Produto product)
+        public async Task<int> CreateAsync(Produto product)
         {
-            _productContext.Add(product);
-            await _productContext.SaveChangesAsync();
-            return product;
+            return
+                await _connection.ExecuteAsync(
+                    "INSERT INTO catalagodapper.produto (Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria) VALUES (@Nome, @Descricao, @Preco, @ImagemUrl, @Estoque, @DataCadastro, @IdCategoria);",
+                    product,
+                    _transaction
+                );
         }
 
         public async Task<Produto> GetByIdAsync(int? id)
         {
-            //return await _productContext.Produtos.FindAsync(id);
-            return await _productContext.Produtos.Include(c => c.Categoria)
-               .SingleOrDefaultAsync(p => p.Id == id);
+            return await _connection.QueryFirstOrDefaultAsync(
+                "SELECT Id, Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria FROM catalagodapper.produto WHERE Id=@Id;",
+                new { id },
+                _transaction
+            );
         }
 
         public async Task<IEnumerable<Produto>> GetProdutosAsync()
         {
-            return await _productContext.Produtos.ToListAsync();
+            return await _connection.QueryAsync<Produto>(
+                "SELECT Id, Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria FROM catalagodapper.produto;",
+                _transaction
+            );
         }
 
-        public async Task<Produto> RemoveAsync(Produto product)
+        public async Task<int> RemoveAsync(Produto product)
         {
-            _productContext.Remove(product);
-            await _productContext.SaveChangesAsync();
-            return product;
+            return await _connection.ExecuteAsync(
+               "DELETE FROM catalagodapper.produto WHERE Id=@Id;",
+               new { product.Id },
+               _transaction
+            );
         }
 
-        public async Task<Produto> UpdateAsync(Produto product)
+        public async Task<int> UpdateAsync(Produto product)
         {
-            _productContext.Update(product);
-            await _productContext.SaveChangesAsync();
-            return product;
+            return
+                await _connection.ExecuteAsync(
+                    @"UPDATEcatalagodapper.produto 
+                        SET Nome=@Nome, Descricao=@Descricao, Preco=@Preco, ImagemUrl=@ImagemUrl, Estoque=@Estoque, DataCadastro=@DataCadastro, IdCategoria=@IdCategoria) WHERE Id=@Id;",
+                    new { product.Id },
+                    _transaction
+                );
         }
     }
 }
