@@ -1,19 +1,23 @@
+using Catalogo.Infrastructure.Connection;
+using Catalogo.Application.UoW;
 using Dapper;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Catalogo.Infrastructure.Connection;
-using System.Collections.Generic;
 
 namespace Catalogo.Infrastructure.Context
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWorkRepository
     {
-        private bool hasConnection = false;
-        public bool HasConnection => hasConnection;
+        private DbConnection _connection { get; set; }
+        public DbTransaction _transaction { get; set; }
 
-        private DbConnection _connection;
-        private DbTransaction _transaction;
+        public IDbConnection Connection => _connection ?? throw new DataException("Connection is closed.");
+
+        public IDbTransaction Transaction => _transaction;
+
         private readonly IConnectionFactory _connectionFactory;
 
         public UnitOfWork(IConnectionFactory connectionFactory)
@@ -21,74 +25,56 @@ namespace Catalogo.Infrastructure.Context
             _connectionFactory = connectionFactory;
         }
 
-        public async Task CommitAsync()
+        public async Task<IUnitOfWork> BeginTransactionAsync()
         {
-            ThrowWhenNotCreatedConnection();
+            if (_transaction is null)
+                _transaction = await  _connection.BeginTransactionAsync();
 
-            await _transaction.CommitAsync();
+            return this;
         }
 
-        public async Task<IDbConnection> CreateConnectionAsync()
+        public async Task SaveChangesAsync()
         {
-            if (!hasConnection)
+            try
             {
-                _connection = _connectionFactory.CreateConn();
-                await _connection.OpenAsync();
-                _transaction = await _connection.BeginTransactionAsync();
-                hasConnection = true;
+                await _transaction?.CommitAsync();
             }
-
-            return _connection;
+            catch
+            {
+                await _transaction?.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                _transaction?.Dispose();
+                _transaction = null;
+            }
         }
 
         public void Dispose()
         {
             if (_transaction is not null)
-                _transaction?.Dispose();
-            
+            {
+                _transaction.Dispose();
+                _transaction = null;
+            }
+
             if (_connection is not null)
-                _connection?.Dispose();
-            
-            _transaction = null;
-            _connection = null;
-
-            hasConnection = false;
+            {
+                _connection.Dispose();
+                _connection = null;
+            }
         }
 
-        public async Task<int> ExecuteAsync(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null)
-        {
-            ThrowWhenNotCreatedConnection();
-
-            return await _connection.ExecuteAsync(sql, param, _transaction, commandTimeout, commandType);
-        }
-
-        public async Task RollBackAsync()
-        {
-            ThrowWhenNotCreatedConnection();
-
-            await _transaction.RollbackAsync();
-        }
-
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null)
-        {
-            ThrowWhenNotCreatedConnection();
-
-            return await _connection.QueryAsync<T>(sql, param, _transaction, commandTimeout, commandType);
-        }
-
-        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null)
-        {
-            ThrowWhenNotCreatedConnection();
-
-            return await _connection.QueryFirstOrDefaultAsync<T>(sql, param, _transaction, commandTimeout, commandType);
-        }
-
-        private void ThrowWhenNotCreatedConnection()
+        public async Task<IUnitOfWork> OpenConnectionAsync()
         {
             if (_connection is null)
             {
-                throw new DataException("No has there Connection to execute method.");
+                _connection = _connectionFactory.CreateConn();
+                await _connection.OpenAsync();
             }
+
+            return this;
         }
     }
 }

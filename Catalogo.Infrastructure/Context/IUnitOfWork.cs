@@ -1,55 +1,22 @@
-using System;
-using System.Collections.Generic;
+using Catalogo.Application.UoW;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace Catalogo.Infrastructure.Context
 {
     /// <summary>
-    /// Unit of work give a shared connection to repository
+    /// Give a shared connection to repositorys
     /// </summary>
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWorkRepository : IUnitOfWork
     {
         /// <summary>
-        /// Verify if has there connection
+        /// Avaliable connection
         /// </summary>
-        bool HasConnection { get; }
+        IDbConnection Connection { get; }
 
         /// <summary>
-        /// Connection already open
+        /// Avaliable Transaction
         /// </summary>
-        /// <returns>async result of <see cref="IDbConnection"/> opened</returns>
-        Task<IDbConnection> CreateConnectionAsync();
-
-        /// <summary>
-        /// Commit
-        /// </summary>
-        /// <returns>async</returns>
-        Task CommitAsync();
-        
-        /// <summary>
-        /// Execute command
-        /// </summary>
-        /// <returns>int - rows affected</returns>
-        Task<int> ExecuteAsync(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null);
-
-        /// <summary>
-        /// Roll back
-        /// </summary>
-        /// <returns>async</returns>
-        Task RollBackAsync();
-
-        /// <summary>
-        /// Query command
-        /// </summary>
-        /// <returns>list of T</returns>
-        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null);
-
-        /// <summary>
-        /// Query command
-        /// </summary>
-        /// <returns>T result or null</returns>
-        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null);
+        IDbTransaction Transaction { get; }
     }
 }
 

@@ -22,7 +22,7 @@ namespace Catalogo.CrossCutting.IoC
                 .AddScoped<IProdutoRepository, ProdutoRepository>()
                 .AddScoped<IProdutoService, ProdutoService>()
                 .AddScoped<ICategoriaService, CategoriaService>()
-                .AddScoped<IUnitOfWork, UnitOfWork>();
+                .AddScoped<IUnitOfWorkRepository, UnitOfWork>();
 
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 
