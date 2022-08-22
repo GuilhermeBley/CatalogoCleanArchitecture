@@ -3,9 +3,9 @@ using Catalogo.Application.Mappings;
 using Catalogo.Application.Services;
 using Catalogo.Application.UoW;
 using Catalogo.Domain.Interfaces;
+using Catalogo.Infrastructure.Connection;
 using Catalogo.Infrastructure.Context;
 using Catalogo.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -19,6 +19,7 @@ namespace Catalogo.CrossCutting.IoC
         {
             services
                 .AddSingleton<IConfiguration>(configuration)
+                .AddTransient<IConnectionFactory, ConnectionFactory>()
                 .AddScoped<ICategoriaRepository, CategoriaRepository>()
                 .AddScoped<IProdutoRepository, ProdutoRepository>()
                 .AddScoped<IProdutoService, ProdutoService>()

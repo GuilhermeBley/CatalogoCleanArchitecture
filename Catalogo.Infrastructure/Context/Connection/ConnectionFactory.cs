@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Catalogo.Infrastructure.Connection
 {
-    internal class ConnectionFactory : IConnectionFactory
+    public class ConnectionFactory : IConnectionFactory
     {
         /// <summary>
         /// Acess connection string
