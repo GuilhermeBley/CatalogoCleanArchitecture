@@ -8,6 +8,7 @@ namespace Catalogo.Domain.Interfaces
     {
         Task<IEnumerable<Categoria>> GetCategoriasAsync();
         Task<Categoria> GetByIdAsync(int? id);
+        Task<Categoria> GetByName(string name);
         Task<int> CreateAsync(Categoria categoria);
         Task<int> UpdateAsync(Categoria categoria);
         Task<int> RemoveAsync(Categoria categoria);

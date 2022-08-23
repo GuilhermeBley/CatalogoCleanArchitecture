@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Catalogo.Application.DTOs;
+using Catalogo.Application.Exceptions;
 using Catalogo.Application.Interfaces;
 using Catalogo.Application.UoW;
 using Catalogo.Domain.Entities;
@@ -47,11 +48,15 @@ namespace Catalogo.Application.Services
 
         public async Task Add(CategoriaDTO categoryDto)
         {
-            Categoria categoryEntity;
+            var categoryEntity = _mapper.Map<Categoria>(categoryDto);
+
+            categoryEntity.Validate();
 
             using (await _uow.BeginTransactionAsync())
             {
-                categoryEntity = _mapper.Map<Categoria>(categoryDto);
+                if ((await _categoryRepository.GetByName(categoryEntity.Nome)) is not null)
+                    throw new ConflictException($"Category with name {categoryEntity.Nome} already exists.");
+
                 await _categoryRepository.CreateAsync(categoryEntity);
                 await _uow.SaveChangesAsync();
             }
@@ -59,9 +64,19 @@ namespace Catalogo.Application.Services
 
         public async Task Update(CategoriaDTO categoryDto)
         {
+            var categoryEntity = _mapper.Map<Categoria>(categoryDto);
+
+            categoryEntity.Validate();
+
             using (await _uow.BeginTransactionAsync())
             {
-                var categoryEntity = _mapper.Map<Categoria>(categoryDto);
+                var currentlyCategoryBd = (await _categoryRepository.GetByIdAsync(categoryEntity.Id))
+                    ?? throw new NotFoundException($"Category with id {categoryEntity.Id} not found.");
+
+                if (!currentlyCategoryBd.Nome.Equals(categoryEntity.Nome) &&
+                    (await _categoryRepository.GetByName(categoryEntity.Nome)) is not null)
+                    throw new ConflictException($"Category with name {categoryEntity.Nome} already exists.");
+
                 await _categoryRepository.UpdateAsync(categoryEntity);
                 await _uow.SaveChangesAsync();
             }

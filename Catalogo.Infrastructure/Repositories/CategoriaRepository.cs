@@ -16,7 +16,7 @@ namespace Catalogo.Infrastructure.Repositories
         public async Task<int> CreateAsync(Categoria category)
         {
             return
-                await _connection.ExecuteAsync("INSERT INTO catalagodapper.categoria (Nome, ImagemUrl) VALUES (@Nome, @ImagemUrl);", 
+                await _connection.ExecuteAsync("INSERT INTO catalagodapper.categoria (Nome, ImagemUrl) VALUES (@Nome, @ImagemUrl);",
                     category,
                     transaction: _transaction
                 );
@@ -27,6 +27,15 @@ namespace Catalogo.Infrastructure.Repositories
             return await _connection.QueryFirstOrDefaultAsync<Categoria>(
                 "SELECT Id, Nome, ImagemUrl FROM catalagodapper.categoria WHERE Id=@Id;",
                 new { id },
+                _transaction
+            );
+        }
+
+        public async Task<Categoria> GetByName(string name)
+        {
+            return await _connection.QueryFirstOrDefaultAsync<Categoria>(
+                "SELECT Id, Nome, ImagemUrl FROM catalagodapper.categoria WHERE UPPER(Nome)=@Name;",
+                new { name },
                 _transaction
             );
         }
@@ -51,7 +60,7 @@ namespace Catalogo.Infrastructure.Repositories
 
         public async Task<int> UpdateAsync(Categoria category)
         {
-            return 
+            return
                 await _connection.ExecuteAsync(
                     "UPDATE catalagodapper.categoria SET Nome=@Nome, ImagemUrl=@ImagemUrl WHERE Id=@Id;",
                     category,
