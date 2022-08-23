@@ -54,10 +54,6 @@ namespace Catalogo.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] CategoriaDTO categoriaDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             if (id != categoriaDto.Id)
             {
                 return BadRequest();

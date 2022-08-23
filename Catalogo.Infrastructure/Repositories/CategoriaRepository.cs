@@ -53,7 +53,7 @@ namespace Catalogo.Infrastructure.Repositories
         {
             return 
                 await _connection.ExecuteAsync(
-                    "UPDATE catalagodapper.categoria SET Nome=@Nome, ImagemUrl=@ImagemUrl;",
+                    "UPDATE catalagodapper.categoria SET Nome=@Nome, ImagemUrl=@ImagemUrl WHERE Id=@Id;",
                     category,
                     _transaction
                 );

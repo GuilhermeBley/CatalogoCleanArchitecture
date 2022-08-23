@@ -55,8 +55,6 @@ namespace Catalogo.Application.Services
                 await _categoryRepository.CreateAsync(categoryEntity);
                 await _uow.SaveChangesAsync();
             }
-
-            await _categoryRepository.CreateAsync(categoryEntity);
         }
 
         public async Task Update(CategoriaDTO categoryDto)

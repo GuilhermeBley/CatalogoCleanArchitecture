@@ -32,6 +32,8 @@ namespace Catalogo.Infrastructure.Context
 
         public async Task<IUnitOfWork> BeginTransactionAsync()
         {
+            await OpenConnectionAsync();
+            
             if (_transaction is null)
                 _transaction = await  _connection.BeginTransactionAsync();
 
