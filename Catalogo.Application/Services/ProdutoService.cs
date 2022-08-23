@@ -14,16 +14,17 @@ namespace Catalogo.Application.Services
     {
         private readonly IUnitOfWork _uoW;
         private IProdutoRepository _productRepository;
-
+        private readonly ICategoriaRepository _categoriaRepository;
         private readonly IMapper _mapper;
         public ProdutoService(
             IUnitOfWork uoW,
             IProdutoRepository productRepository,
+            ICategoriaRepository categoriaRepository,
             IMapper mapper)
         {
             _uoW = uoW;
-            _productRepository = productRepository ??
-                 throw new ArgumentNullException(nameof(productRepository));
+            _productRepository = productRepository;
+            _categoriaRepository = categoriaRepository;
             _mapper = mapper;
         }
 
@@ -64,6 +65,8 @@ namespace Catalogo.Application.Services
 
             using (await _uoW.BeginTransactionAsync())
             {
+                if (await )
+
                 await _productRepository.UpdateAsync(productEntity);
                 await _uoW.SaveChangesAsync();
             }
