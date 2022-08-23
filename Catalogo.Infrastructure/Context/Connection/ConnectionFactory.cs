@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace Catalogo.Infrastructure.Connection
 {
@@ -8,7 +9,7 @@ namespace Catalogo.Infrastructure.Connection
         /// <summary>
         /// Acess connection string
         /// </summary>
-        private const string KeyConnectionString = "";
+        private const string KeyConnectionString = "DefaultConnectionCatalogoDapper";
 
         private readonly IConfiguration _configuration;
 
@@ -19,7 +20,10 @@ namespace Catalogo.Infrastructure.Connection
 
         public DbConnection CreateConn()
         {
-            return null;
+            return 
+                new MySqlConnection(
+                    _configuration.GetConnectionString(KeyConnectionString)
+                );
         }
     }
 }

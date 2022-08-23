@@ -21,7 +21,7 @@ namespace Catalogo.Infrastructure.Context
 
         public IDbTransaction Transaction => _transaction;
 
-        public Guid Identifier { get; } = new Guid();
+        public Guid Identifier { get; } = Guid.NewGuid();
 
         private readonly IConnectionFactory _connectionFactory;
 

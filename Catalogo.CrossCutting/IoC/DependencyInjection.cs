@@ -24,8 +24,9 @@ namespace Catalogo.CrossCutting.IoC
                 .AddScoped<IProdutoRepository, ProdutoRepository>()
                 .AddScoped<IProdutoService, ProdutoService>()
                 .AddScoped<ICategoriaService, CategoriaService>()
-                .AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>()
-                .AddScoped<IUnitOfWork, UnitOfWorkRepository>();
+                .AddScoped<UnitOfWorkRepository>()
+                .AddScoped<IUnitOfWorkRepository>(x => x.GetRequiredService<UnitOfWorkRepository>())
+                .AddScoped<IUnitOfWork>(x => x.GetRequiredService<UnitOfWorkRepository>());
 
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 
