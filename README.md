@@ -169,75 +169,77 @@ public class UnitOfWorkRepository : IUnitOfWorkRepository
   
   To use this implementation two parts needed.
   
-  - Repository:
+  - Repository
+  
   Needs a connection and transaction to execute the commands, and in all of the connections in DataBase should be use this way:
+  
   ```C#
-[...]
-public class CategoriaRepository : RepositoryBase, ICategoriaRepository
-{
-      private readonly IUnitOfWorkRepository _uoW;
+  [...]
+  public class CategoriaRepository : RepositoryBase, ICategoriaRepository
+  {
+        private readonly IUnitOfWorkRepository _uoW;
 
-      /// <summary>
-      /// Connection to execute commands and querys
-      /// </summary>
-      protected IDbConnection _connection => _uoW.Connection;
+        /// <summary>
+        /// Connection to execute commands and querys
+        /// </summary>
+        protected IDbConnection _connection => _uoW.Connection;
 
-      /// <summary>
-      /// Shared execution
-      /// </summary>
-      protected IDbTransaction _transaction => _uoW.Transaction;
+        /// <summary>
+        /// Shared execution
+        /// </summary>
+        protected IDbTransaction _transaction => _uoW.Transaction;
 
-      public RepositoryBase(IUnitOfWorkRepository uoW)
-      {
-          _uoW = uoW;
-      }
-      
-      public async Task<int> CreateAsync(Produto product)
+        public RepositoryBase(IUnitOfWorkRepository uoW)
         {
-            return
-                await _connection.ExecuteAsync(
-                    "INSERT INTO catalagodapper.produto (Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria) VALUES (@Nome, @Descricao, @Preco, @ImagemUrl, @Estoque, @DataCadastro, @IdCategoria);",
-                    product,
-                    _transaction
-                );
+            _uoW = uoW;
         }
-}
-[...]
+
+        public async Task<int> CreateAsync(Produto product)
+          {
+              return
+                  await _connection.ExecuteAsync(
+                      "INSERT INTO catalagodapper.produto (Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria) VALUES (@Nome, @Descricao, @Preco, @ImagemUrl, @Estoque, @DataCadastro, @IdCategoria);",
+                      product,
+                      _transaction
+                  );
+          }
+  }
+  [...]
   ```
   
-    The Services manage a open connection to Repositories, having two ways, the simple execution, without transaction, or with it.
-    
-    ```C#
-    public class CategoriaService : ICategoriaService
-    {
-        private readonly IUnitOfWork _uow;
-        private ICategoriaRepository _categoryRepository;
-        private readonly IMapper _mapper;
+  The Services manage a open connection to Repositories, having two ways, the simple execution, without transaction, or with it.
 
-        public CategoriaService(
-            IUnitOfWork uow,
-            ICategoriaRepository categoryRepository,
-            IMapper mapper)
-        {
-            _uow = uow;
-            _categoryRepository = categoryRepository;
-            _mapper = mapper;
-        }
-        
-        public async Task Add(CategoriaDTO categoryDto)
-        {
-            var categoryEntity = _mapper.Map<Categoria>(categoryDto);
+  ```C#
+  public class CategoriaService : ICategoriaService
+  {
+      private readonly IUnitOfWork _uow;
+      private ICategoriaRepository _categoryRepository;
+      private readonly IMapper _mapper;
 
-            categoryEntity.Validate();
+      public CategoriaService(
+          IUnitOfWork uow,
+          ICategoriaRepository categoryRepository,
+          IMapper mapper)
+      {
+          _uow = uow;
+          _categoryRepository = categoryRepository;
+          _mapper = mapper;
+      }
 
-            using (await _uow.BeginTransactionAsync())
-            {
-                if ((await _categoryRepository.GetByName(categoryEntity.Nome)) is not null)
-                    throw new ConflictException($"Category with name {categoryEntity.Nome} already exists.");
+      public async Task Add(CategoriaDTO categoryDto)
+      {
+          var categoryEntity = _mapper.Map<Categoria>(categoryDto);
 
-                await _categoryRepository.CreateAsync(categoryEntity);
-                await _uow.SaveChangesAsync();
-            }
-        }
-    }
-    ```
+          categoryEntity.Validate();
+
+          using (await _uow.BeginTransactionAsync())
+          {
+              if ((await _categoryRepository.GetByName(categoryEntity.Nome)) is not null)
+                  throw new ConflictException($"Category with name {categoryEntity.Nome} already exists.");
+
+              await _categoryRepository.CreateAsync(categoryEntity);
+              await _uow.SaveChangesAsync();
+          }
+      }
+  }
+  ```
