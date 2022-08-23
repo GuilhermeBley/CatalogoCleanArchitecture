@@ -206,6 +206,7 @@ public class UnitOfWorkRepository : IUnitOfWorkRepository
   }
   [...]
   ```
+  - Services
   
   The Services manage a open connection to Repositories, having two ways, the simple execution, without transaction, or with it.
 
