@@ -1,4 +1,5 @@
 ﻿using Catalogo.Application.DTOs;
+using Catalogo.Application.Exceptions;
 using Catalogo.Application.Interfaces;
 using Catalogo.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +21,33 @@ namespace Catalogo.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get()
         {
-            var categorias = await _categoriaService.GetCategorias();
+            IEnumerable<CategoriaDTO> categorias;
+
+            try
+            {
+                categorias = await _categoriaService.GetCategorias();
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
+
             return Ok(categorias);
         }
 
         [HttpGet("{id}", Name = "GetCategoria")]
         public async Task<ActionResult<Categoria>> Get(int id)
         {
-            var categoria = await _categoriaService.GetById(id);
+            CategoriaDTO categoria;
+
+            try
+            {
+                categoria = await _categoriaService.GetById(id);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
 
             if (categoria == null)
             {
@@ -39,12 +59,15 @@ namespace Catalogo.API.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] CategoriaDTO categoriaDto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                await _categoriaService.Add(categoriaDto);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
             }
 
-            await _categoriaService.Add(categoriaDto);
 
             return new CreatedAtRouteResult("GetCategoria",
                 new { id = categoriaDto.Id }, categoriaDto);
@@ -58,7 +81,16 @@ namespace Catalogo.API.Controllers
             {
                 return BadRequest();
             }
-            await _categoriaService.Update(categoriaDto);
+
+            try
+            {
+                await _categoriaService.Update(categoriaDto);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
+
             return Ok(categoriaDto);
         }
 
@@ -70,7 +102,16 @@ namespace Catalogo.API.Controllers
             {
                 return NotFound();
             }
-            await _categoriaService.Remove(id);
+
+            try
+            {
+                await _categoriaService.Remove(id);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
+
             return Ok(categoriaDto);
         }
     }

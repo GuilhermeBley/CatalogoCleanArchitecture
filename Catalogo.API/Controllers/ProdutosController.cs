@@ -1,4 +1,5 @@
 ﻿using Catalogo.Application.DTOs;
+using Catalogo.Application.Exceptions;
 using Catalogo.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -21,19 +22,39 @@ namespace Catalogo.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get()
         {
-            var produtos = await _produtoService.GetProdutos();
+            IEnumerable<ProdutoDTO> produtos;
+
+            try
+            {
+                produtos = await _produtoService.GetProdutos();
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
+            
             return Ok(produtos);
         }
 
         [HttpGet("{id}", Name = "GetProduto")]
         public async Task<ActionResult<ProdutoDTO>> Get(int id)
         {
-            var produto = await _produtoService.GetById(id);
+            ProdutoDTO produto;
+
+            try
+            {
+                produto = await _produtoService.GetById(id);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
 
             if (produto == null)
             {
                 return NotFound();
             }
+
             return Ok(produto);
         }
 
@@ -45,7 +66,14 @@ namespace Catalogo.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _produtoService.Add(produtoDto);
+            try
+            {
+                await _produtoService.Add(produtoDto);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
 
             return new CreatedAtRouteResult("GetProduto",
                 new { id = produtoDto.Id }, produtoDto);
@@ -58,8 +86,15 @@ namespace Catalogo.API.Controllers
             {
                 return BadRequest();
             }
-
-            await _produtoService.Update(produtoDto);
+            
+            try
+            {
+                await _produtoService.Update(produtoDto);
+            }
+            catch (CatalogoException e)
+            {
+                return StatusCode(e.StatusCode, e.Message);
+            }
 
             return Ok(produtoDto);
         }
