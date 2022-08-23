@@ -71,10 +71,13 @@ namespace Catalogo.Application.Services
 
         public async Task Remove(int? id)
         {
-            var productEntity = _productRepository.GetByIdAsync(id).Result;
+            Produto productEntity;
+            using (await _uoW.OpenConnectionAsync())
+                productEntity = await _productRepository.GetByIdAsync(id);
 
             using (await _uoW.BeginTransactionAsync())
             {
+                
                 await _productRepository.RemoveAsync(productEntity);
                 await _uoW.SaveChangesAsync();
             }

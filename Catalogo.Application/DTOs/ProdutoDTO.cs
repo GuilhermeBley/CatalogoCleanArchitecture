@@ -33,6 +33,6 @@ namespace Catalogo.Application.DTOs
 
         [Required(ErrorMessage = "Informe a data do cadastro")]
         public DateTime DataCadastro { get; set; }
-        public int CategoriaId { get; set; }
+        public int IdCategoria { get; set; }
     }
 }

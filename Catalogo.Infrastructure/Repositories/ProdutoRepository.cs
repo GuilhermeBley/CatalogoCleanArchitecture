@@ -25,7 +25,7 @@ namespace Catalogo.Infrastructure.Repositories
 
         public async Task<Produto> GetByIdAsync(int? id)
         {
-            return await _connection.QueryFirstOrDefaultAsync(
+            return await _connection.QueryFirstOrDefaultAsync<Produto>(
                 "SELECT Id, Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria FROM catalagodapper.produto WHERE Id=@Id;",
                 new { id },
                 _transaction
@@ -53,9 +53,10 @@ namespace Catalogo.Infrastructure.Repositories
         {
             return
                 await _connection.ExecuteAsync(
-                    @"UPDATEcatalagodapper.produto 
-                        SET Nome=@Nome, Descricao=@Descricao, Preco=@Preco, ImagemUrl=@ImagemUrl, Estoque=@Estoque, DataCadastro=@DataCadastro, IdCategoria=@IdCategoria) WHERE Id=@Id;",
-                    new { product.Id },
+                    @"UPDATE catalagodapper.produto 
+                        SET Nome=@Nome, Descricao=@Descricao, Preco=@Preco, ImagemUrl=@ImagemUrl, Estoque=@Estoque, DataCadastro=@DataCadastro, IdCategoria=@IdCategoria
+                        WHERE Id=@Id;",
+                    product,
                     _transaction
                 );
         }
