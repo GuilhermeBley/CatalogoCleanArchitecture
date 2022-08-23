@@ -32,6 +32,17 @@ namespace Catalogo.Infrastructure.Repositories
             );
         }
 
+        public async Task<Produto> GetByName(string name)
+        {
+            return
+                await _connection.QueryFirstOrDefaultAsync<Produto>(
+                    @"SELECT Id, Nome, Descricao, Preco, ImagemUrl, Estoque, DataCadastro, IdCategoria  FROM catalagodapper.produto
+                        WHERE UPPER(NOME)=@Name;",
+                    new { name },
+                    _transaction
+                );
+        }
+
         public async Task<IEnumerable<Produto>> GetProdutosAsync()
         {
             return await _connection.QueryAsync<Produto>(

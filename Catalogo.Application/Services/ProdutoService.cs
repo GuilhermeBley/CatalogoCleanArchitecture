@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Catalogo.Application.DTOs;
+using Catalogo.Application.Exceptions;
 using Catalogo.Application.Interfaces;
 using Catalogo.Application.UoW;
 using Catalogo.Domain.Entities;
@@ -52,8 +53,15 @@ namespace Catalogo.Application.Services
         {
             var productEntity = _mapper.Map<Produto>(productDto);
 
+            productEntity.Validate();
+
             using (await _uoW.BeginTransactionAsync())
             {
+                if ((await _productRepository.GetByName(productDto.Nome)) is not null)
+                    throw new ConflictException($"Product with name {productDto.Nome} already exists.");
+                if ((await _categoriaRepository.GetByIdAsync(productDto.IdCategoria)) is null)
+                    throw new NotFoundException($"Category with id {productDto.IdCategoria} not found.");
+
                 await _productRepository.CreateAsync(productEntity);
                 await _uoW.SaveChangesAsync();
             }
@@ -63,9 +71,19 @@ namespace Catalogo.Application.Services
         {
             var productEntity = _mapper.Map<Produto>(productDto);
 
+            productEntity.Validate();
+
             using (await _uoW.BeginTransactionAsync())
             {
-                if (await )
+                Produto productDb = (await _productRepository.GetByIdAsync(productDto.Id)) 
+                    ?? throw new NotFoundException($"Product with id {productDto.Id} not found.");
+                
+                if (!productDb.Nome.Equals(productEntity.Nome) &&
+                    (await _productRepository.GetByName(productEntity.Nome)) is not null)
+                    throw new ConflictException($"Product with name {productDto.Nome} already exists.");
+
+                if ((await _categoriaRepository.GetByIdAsync(productDto.IdCategoria)) is null)
+                    throw new NotFoundException($"Category with id {productDto.IdCategoria} not found.");
 
                 await _productRepository.UpdateAsync(productEntity);
                 await _uoW.SaveChangesAsync();
@@ -78,9 +96,11 @@ namespace Catalogo.Application.Services
             using (await _uoW.OpenConnectionAsync())
                 productEntity = await _productRepository.GetByIdAsync(id);
 
+            if (productEntity is null)
+                throw new NotFoundException($"Product with id {id} not found.");
+
             using (await _uoW.BeginTransactionAsync())
             {
-                
                 await _productRepository.RemoveAsync(productEntity);
                 await _uoW.SaveChangesAsync();
             }
